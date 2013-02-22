@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Työkalulaatikko{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="/static/img/favicon.ico" />
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        }
+    </style>
+    <link href="/static/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="/static/css/jquery-ui-1.10.1.custom.css" rel="stylesheet">
+
+    <link href="/static/css/jquery-ui-timepicker-addon.css" rel="stylesheet">
+
+    <style type="text/css">
+            /* Possible CSS overrides */
+
+        {% block css_override %}{% endblock %}
+    </style>
+</head>
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/">Lanit.at</a>
+
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li><a href="/">Etusivu</a></li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h1>{{ self.title() }}</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}
+        Lanit.at
+    {% endblock %}
+
+    <hr>
+    <footer>
+        <p>Kymymyksiä, kommentteja tai ehdotuksia? Ota yhteyttä Twitterissä <a href="http://twitter.com/mikeful/">@mikeful</a>
+            tai <a href="mailto:mikefulli@gmail.com">sähköpostilla</a>. </p>
+    </footer>
+</div>
+<!-- /container -->
+
+<script src="/static/js/jquery-1.9.1.js"></script>
+
+<script src="/static/js/jquery-ui-1.10.1.custom.min.js"></script>
+<script src="/static/js/jquery-ui-timepicker-addon.js"></script>
+<script src="/static/js/localization/jquery-ui-timepicker-fi.js"></script>
+
+<script src="/static/js/bootstrap.min.js"></script>
+
+{% block extra_js %}{% endblock %}
+
+<script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '{{ config['GOOGLE_ANALYTICS_KEY'] }}']);
+    _gaq.push(['_trackPageview']);
+
+    (function () {
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ga, s);
+    })();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block css_override %}
+    .jumbotron {
+    text-align: center;
+    }
+{% endblock %}
+
+{% block title %}Lanit.at LAN-lista{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="span12">
+            <p>Lanit.at tarjoaa tavan listata ja ilmoittaa tulevia LANeja. Listauille LANeilla on tarjolla lyhyt-URL,
+                jolla kiinnostuneita käyttäjiä voi ohjata LANien tietosivuille.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span9">
+            {% if ongoing_events %}
+                <h2>Käynnissä olevat LANit</h2>
+
+                {% for event in ongoing_events %}
+                    <div class="row">
+                        <div class="span9"><h3>{{ event.name }}</h3></div>
+                        <div class="span7">
+                            <p>LANit käynnissä {{ event.start_time | seconds_to_datetime }}
+                                - {{ event.end_time | seconds_to_datetime }}, {{ event.url }}</p>
+                        </div>
+                        <div class="span2"><a
+                                href="{{ url_for('handle_event_redirect', _external=True, short_name=event.short_name) }}"
+                                class="well well-small pull-right">{{ url_for('handle_event_redirect', _external=True, short_name=event.short_name) }}</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <h2>Tulossa olevat LANit</h2>
+            {% if upcoming_events %}
+                {% for event in upcoming_events %}
+                    <div class="row">
+                        <div class="span9"><h3>{{ event.name }}</h3></div>
+                        <div class="span7">
+                            <p>LANit käynnissä {{ event.start_time | seconds_to_datetime }}
+                                - {{ event.end_time | seconds_to_datetime }}, {{ event.url }}</p>
+                        </div>
+                        <div class="span2"><a
+                                href="{{ url_for('handle_event_redirect', _external=True, short_name=event.short_name) }}"
+                                class="well well-small pull-right">{{ url_for('handle_event_redirect', _external=True, short_name=event.short_name) }}</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else: %}
+                <div class="row">
+                    <div class="span9">
+                        <p>Ei tulevia LANeja :(</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="span3">
+            <h2>Lisää tapahtuma</h2>
+
+            <p>Tapahtumien lisäyslomake lisätään myöhemmin. :D Odotellessa voit ottaa yhteyttä sähköpostilla tai
+                irkitse.</p>
+
+	        {# Lisätään myöhemmin
+            <p>Infoa lomakkeen täyttämiseen.</p>
+
+            <div>
+                <form method="POST" action="{{ url_for('handle_add_event') }}">
+                    <fieldset>
+                        <label for="add_name">Tapahtuman nimi/kuvaus
+                            <input name="name" id="add_name" type="text" placeholder="Esimerkkilanit 2013">
+                        </label>
+
+                        <label for="add_short_name">Lynytnimi
+                            <input name="short_name" id="add_short_name" type="text" placeholder="esim">
+                        </label>
+
+                        <label for="add_url">Tapahtuman sivut
+                            <input name="url" id="add_url" type="text" placeholder="http://www.esimerk.ki/lanit2013/">
+                        </label>
+
+                        <label for="add_start_time">Tapahtuma alkaa
+                            <input name="start_time" id="add_start_time" type="text" placeholder="01.12.2013 00:30">
+                        </label>
+
+                        <label for="add_end_time">Tapahtuma päättyy
+                            <input name="end_time" id="add_end_time" type="text" placeholder="31.12.2013 23:59">
+                        </label>
+
+                        <button type="submit" class="btn">Submit</button>
+                    </fieldset>
+                </form>
+            </div>
+
+            <h2>Poista tapahtuma</h2>
+
+            <p>Infoa poistolomakkeen täyttämiseen ja tapahtuman poistamiseen.</p>
+
+            <div>
+                <form method="POST" action="{{ url_for('handle_remove_event') }}">
+                    <fieldset>
+                        <label for="remove_short_name">Lynytnimi
+                            <input name="short_name" id="remove_short_name" type="text" placeholder="esim">
+                        </label>
+
+                        <label for="remove_secret">Poistokoodi
+                            <input name="secret" id="remove_secret" type="text" placeholder="h9t4vsdf8sn">
+                        </label>
+
+                        <button type="submit" class="btn">Submit</button>
+                    </fieldset>
+                </form>
+            </div>
+	        #}
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var options = {
+                firstDay: 1,
+                minDate: 0,
+                dateFormat: "dd.mm.yy",
+                timeFormat: "HH:mm"
+
+                //addSliderAccess: true,
+                //sliderAccessArgs: { touchonly: false }
+            };
+
+            $('#add_start_time').datetimepicker(options);
+            $('#add_end_time').datetimepicker(options);
+        });
+    </script>
+{% endblock %}
