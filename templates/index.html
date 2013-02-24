@@ -21,17 +21,19 @@
                 <h2>Käynnissä olevat LANit</h2>
 
                 {% for event in ongoing_events %}
-                    <div class="row">
-                        <div class="span9"><h3>{{ event.name }}</h3></div>
-                        <div class="span7">
-                            <p>LANit käynnissä {{ event.start_time | seconds_to_datetime }}
-                                - {{ event.end_time | seconds_to_datetime }}, {{ event.url }}</p>
+                    {% if event.start_time %}
+                        <div class="row">
+                            <div class="span9"><h3>{{ event.name }}</h3></div>
+                            <div class="span7">
+                                <p>LANit käynnissä {{ event.start_time | seconds_to_datetime }}
+                                    - {{ event.end_time | seconds_to_datetime }}, {{ event.url }}</p>
+                            </div>
+                            <div class="span2"><a
+                                    href="{{ url_for('handle_event_redirect', _external=True, short_name=event.short_name) }}"
+                                    class="well well-small pull-right">{{ url_for('handle_event_redirect', _external=True, short_name=event.short_name) }}</a>
+                            </div>
                         </div>
-                        <div class="span2"><a
-                                href="{{ url_for('handle_event_redirect', _external=True, short_name=event.short_name) }}"
-                                class="well well-small pull-right">{{ url_for('handle_event_redirect', _external=True, short_name=event.short_name) }}</a>
-                        </div>
-                    </div>
+                    {% endif %}
                 {% endfor %}
             {% endif %}
 
@@ -64,7 +66,7 @@
             <p>Tapahtumien lisäyslomake lisätään myöhemmin. :D Odotellessa voit ottaa yhteyttä sähköpostilla tai
                 irkitse.</p>
 
-	        {# Lisätään myöhemmin #}
+            {# Lisätään myöhemmin #}
             <p>Infoa lomakkeen täyttämiseen.</p>
 
             <div>
