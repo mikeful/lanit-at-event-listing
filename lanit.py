@@ -8,15 +8,17 @@ import urlparse
 
 import datetime
 from dateutil import parser as date_parser
+import time
 
 from BeautifulSoup import BeautifulSoup
+
+import ayah
 
 from flask import Flask, render_template, flash, url_for, redirect, request
 from flask.ext.redis import Redis
 
-# Initialize Flask app
-import time
 
+# Initialize Flask app
 app = Flask(__name__)
 
 # Load base configuration
@@ -48,7 +50,12 @@ def handle_list_events():
     upcoming_events = get_upcoming_events()
     ongoing_events = get_ongoing_events()
 
-    return render_template('index.html', upcoming_events=upcoming_events, ongoing_events=ongoing_events)
+    # Setup Are You A Human check
+    ayah.configure(app.config['ARE_YOU_HUMAN_PUBLISHER_KEY'], app.config['ARE_YOU_HUMAN_SCORING_KEY'])
+    ayah_html = ayah.get_publisher_html()
+
+    return render_template('index.html', upcoming_events=upcoming_events, ongoing_events=ongoing_events,
+                           ayah_html=ayah_html)
 
 
 @app.route('/<short_name>', methods=['GET'])
@@ -85,6 +92,10 @@ def handle_add_event():
     add_url = request.form['url'].strip().lower()
     add_start_time = strip_tags(request.form['start_time'].strip())
     add_end_time = strip_tags(request.form['end_time'].strip())
+    ayah_session_secret = strip_tags(request.form['session_secret'].strip())
+
+    # Setup Are You A Human check
+    ayah.configure(app.config['ARE_YOU_HUMAN_PUBLISHER_KEY'], app.config['ARE_YOU_HUMAN_SCORING_KEY'])
 
     # Validate short name
     if is_valid_short_name(add_short_name) != True:
@@ -111,6 +122,11 @@ def handle_add_event():
     # Check if event already exists with short name
     if event_exists(add_short_name):
         flash(u'Tapahtuman lyhytnimi on jo käytössä. Valitse toinen nimi tai poista olemassa oleva tapahtuma.')
+        return redirect(url_for('handle_list_events'))
+
+    # Call Are You A Human scoring service
+    if ayah.score_result(ayah_session_secret) == False:
+        flash(u'Spämmitarkistus epäonnistui. Tarkista että et ole spämmirobotti ja/tai yritä uudelleen.')
         return redirect(url_for('handle_list_events'))
 
     # Request URL and check it's valid
@@ -147,6 +163,10 @@ def handle_remove_event():
     # Get data from form
     remove_short_name = request.form['short_name'].strip().lower()
     remove_secret = request.form['secret'].strip().lower()
+    ayah_session_secret = strip_tags(request.form['session_secret'].strip())
+
+    # Setup Are You A Human check
+    ayah.configure(app.config['ARE_YOU_HUMAN_PUBLISHER_KEY'], app.config['ARE_YOU_HUMAN_SCORING_KEY'])
 
     # Validation
     if is_valid_short_name(remove_short_name) != True:
@@ -159,6 +179,11 @@ def handle_remove_event():
 
     if event_exists(remove_short_name) != True:
         flash(u'Lyhytnimi tai salainen avain ei täsmää. Tarkista tiedot ja yritä uudelleen.')
+        return redirect(url_for('handle_list_events'))
+
+    # Call Are You A Human scoring service
+    if ayah.score_result(ayah_session_secret) == False:
+        flash(u'Spämmitarkistus epäonnistui. Tarkista että et ole spämmirobotti ja/tai yritä uudelleen.')
         return redirect(url_for('handle_list_events'))
 
     if not remove_event_with_secret(remove_short_name, remove_secret):

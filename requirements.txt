@@ -8,3 +8,4 @@ redis>=2.4
 Requests>=1.1.0
 python-dateutil==2.1
 BeautifulSoup==3.2.1
+are-you-a-human>=1.0.4

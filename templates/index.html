@@ -16,15 +16,15 @@
         </div>
     </div>
     <div class="row">
-        <div class="span9">
+        <div class="span8">
             {% if ongoing_events %}
                 <h2>Käynnissä olevat LANit</h2>
 
                 {% for event in ongoing_events %}
                     {% if event.start_time %}
                         <div class="row">
-                            <div class="span9"><h3>{{ event.name }}</h3></div>
-                            <div class="span7">
+                            <div class="span8"><h3>{{ event.name }}</h3></div>
+                            <div class="span6">
                                 <p>LANit käynnissä {{ event.start_time | seconds_to_datetime }}
                                     - {{ event.end_time | seconds_to_datetime }}, {{ event.url }}</p>
                             </div>
@@ -41,8 +41,8 @@
             {% if upcoming_events %}
                 {% for event in upcoming_events %}
                     <div class="row">
-                        <div class="span9"><h3>{{ event.name }}</h3></div>
-                        <div class="span7">
+                        <div class="span8"><h3>{{ event.name }}</h3></div>
+                        <div class="span6">
                             <p>LANit käynnissä {{ event.start_time | seconds_to_datetime }}
                                 - {{ event.end_time | seconds_to_datetime }}, {{ event.url }}</p>
                         </div>
@@ -60,63 +60,69 @@
                 </div>
             {% endif %}
         </div>
-        <div class="span3">
-            <h2>Lisää tapahtuma</h2>
+        <div class="span4">
+            {% if ayah_html %}
+                <h2>Lisää tapahtuma</h2>
 
-            <p>Tapahtumien lisäyslomake lisätään myöhemmin. :D Odotellessa voit ottaa yhteyttä sähköpostilla tai
-                irkitse.</p>
+                <p>Lisää tapahtuma järjestelmään. Lisäyksen jälkeen saat salaisen avaimen, jolla voit tarvittaessa
+                    poistaa tapahtuman palvelusta.</p>
 
-            {# Lisätään myöhemmin #}
-            <p>Infoa lomakkeen täyttämiseen.</p>
+                <div>
+                    <form method="POST" action="{{ url_for('handle_add_event') }}">
+                        <fieldset>
+                            <label for="add_name">Tapahtuman nimi/kuvaus
+                                <input name="name" id="add_name" type="text" placeholder="Esimerkkilanit 2013">
+                            </label>
 
-            <div>
-                <form method="POST" action="{{ url_for('handle_add_event') }}">
-                    <fieldset>
-                        <label for="add_name">Tapahtuman nimi/kuvaus
-                            <input name="name" id="add_name" type="text" placeholder="Esimerkkilanit 2013">
-                        </label>
+                            <label for="add_short_name">Lynytnimi
+                                <input name="short_name" id="add_short_name" type="text" placeholder="esim">
+                            </label>
 
-                        <label for="add_short_name">Lynytnimi
-                            <input name="short_name" id="add_short_name" type="text" placeholder="esim">
-                        </label>
+                            <label for="add_url">Tapahtuman sivut
+                                <input name="url" id="add_url" type="text"
+                                       placeholder="http://www.esimerk.ki/lanit2013/">
+                            </label>
 
-                        <label for="add_url">Tapahtuman sivut
-                            <input name="url" id="add_url" type="text" placeholder="http://www.esimerk.ki/lanit2013/">
-                        </label>
+                            <label for="add_start_time">Tapahtuma alkaa
+                                <input name="start_time" id="add_start_time" type="text" placeholder="01.12.2013 00:30">
+                            </label>
 
-                        <label for="add_start_time">Tapahtuma alkaa
-                            <input name="start_time" id="add_start_time" type="text" placeholder="01.12.2013 00:30">
-                        </label>
+                            <label for="add_end_time">Tapahtuma päättyy
+                                <input name="end_time" id="add_end_time" type="text" placeholder="31.12.2013 23:59">
+                            </label>
 
-                        <label for="add_end_time">Tapahtuma päättyy
-                            <input name="end_time" id="add_end_time" type="text" placeholder="31.12.2013 23:59">
-                        </label>
+                            {{ ayah_html|safe }}
 
-                        <button type="submit" class="btn">Submit</button>
-                    </fieldset>
-                </form>
-            </div>
+                            <button type="submit" class="btn">Submit</button>
+                        </fieldset>
+                    </form>
+                </div>
 
-            <h2>Poista tapahtuma</h2>
+                <h2>Poista tapahtuma</h2>
 
-            <p>Infoa poistolomakkeen täyttämiseen ja tapahtuman poistamiseen.</p>
+                <p>Poista tapahtuma järjestelmästä lisäämisen yhteydessä saamallasi salaisella avaimella. Mikäli olet
+                    hukannut avaimen, ota yhteyttä.</p>
 
-            <div>
-                <form method="POST" action="{{ url_for('handle_remove_event') }}">
-                    <fieldset>
-                        <label for="remove_short_name">Lynytnimi
-                            <input name="short_name" id="remove_short_name" type="text" placeholder="esim">
-                        </label>
+                <div>
+                    <form method="POST" action="{{ url_for('handle_remove_event') }}">
+                        <fieldset>
+                            <label for="remove_short_name">Lynytnimi
+                                <input name="short_name" id="remove_short_name" type="text" placeholder="esim">
+                            </label>
 
-                        <label for="remove_secret">Poistokoodi
-                            <input name="secret" id="remove_secret" type="text" placeholder="h9t4vsdf8sn">
-                        </label>
+                            <label for="remove_secret">Poistokoodi
+                                <input name="secret" id="remove_secret" type="text" placeholder="h9t4vsdf8sn">
+                            </label>
 
-                        <button type="submit" class="btn">Submit</button>
-                    </fieldset>
-                </form>
-            </div>
+                            {{ ayah_html|safe }}
 
+                            <button type="submit" class="btn">Submit</button>
+                        </fieldset>
+                    </form>
+                </div>
+            {% else: %}
+                <p>Spämmirobottitarkistus hajosi. Lomakkeet poissa käytöstä.</p>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
