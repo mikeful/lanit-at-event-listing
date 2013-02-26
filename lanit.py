@@ -88,7 +88,7 @@ def handle_add_event():
 
     # Get data from form
     add_short_name = strip_tags(request.form['short_name'].strip())
-    add_name = strip_tags(request.form['name'].strip().lower())
+    add_name = strip_tags(request.form['name'].strip())
     add_url = request.form['url'].strip().lower()
     add_start_time = strip_tags(request.form['start_time'].strip())
     add_end_time = strip_tags(request.form['end_time'].strip())
