@@ -70,24 +70,24 @@
                 <div>
                     <form method="POST" action="{{ url_for('handle_add_event') }}">
                         <fieldset>
-                            <label for="add_name">Tapahtuman nimi/kuvaus
+                            <label for="add_name">Tapahtuman nimi/kuvaus:
                                 <input name="name" id="add_name" type="text" placeholder="Esimerkkilanit 2013">
                             </label>
 
-                            <label for="add_short_name">Lynytnimi
+                            <label for="add_short_name">Lynytnimi:
                                 <input name="short_name" id="add_short_name" type="text" placeholder="esim">
                             </label>
 
-                            <label for="add_url">Tapahtuman sivut
+                            <label for="add_url">Tapahtuman sivut:
                                 <input name="url" id="add_url" type="text"
                                        placeholder="http://www.esimerk.ki/lanit2013/">
                             </label>
 
-                            <label for="add_start_time">Tapahtuma alkaa
+                            <label for="add_start_time">Tapahtuma alkaa:
                                 <input name="start_time" id="add_start_time" type="text" placeholder="01.12.2013 00:30">
                             </label>
 
-                            <label for="add_end_time">Tapahtuma päättyy
+                            <label for="add_end_time">Tapahtuma päättyy:
                                 <input name="end_time" id="add_end_time" type="text" placeholder="31.12.2013 23:59">
                             </label>
 
@@ -106,11 +106,11 @@
                 <div>
                     <form method="POST" action="{{ url_for('handle_remove_event') }}">
                         <fieldset>
-                            <label for="remove_short_name">Lynytnimi
+                            <label for="remove_short_name">Lynytnimi:
                                 <input name="short_name" id="remove_short_name" type="text" placeholder="esim">
                             </label>
 
-                            <label for="remove_secret">Poistokoodi
+                            <label for="remove_secret">Poistokoodi:
                                 <input name="secret" id="remove_secret" type="text" placeholder="h9t4vsdf8sn">
                             </label>
 
