@@ -1,22 +1,13 @@
 # coding=utf-8
 import os
-import re
-from random import choice
-
-import requests
-import urlparse
-
-import datetime
-from dateutil import parser as date_parser
-import time
-
-from BeautifulSoup import BeautifulSoup
 
 import ayah
 
 from flask import Flask, render_template, flash, url_for, redirect, request
 from flask.ext.redis import Redis
 
+from utils import validate_url, generate_secret_key, strip_tags, get_current_timestamp, parse_date, seconds_to_datetime, datetime_to_seconds
+from validation import is_valid_short_name, is_valid_secret_key
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -36,6 +27,10 @@ if not app.config['DEBUG']:
                                        maxBytes=1024 * 1024, backupCount=5, encoding="UTF-8")
     file_handler.setLevel(logging.WARNING)
     app.logger.addHandler(file_handler)
+
+# Register template filters
+app.jinja_env.filters['datetime_to_seconds'] = datetime_to_seconds
+app.jinja_env.filters['seconds_to_datetime'] = seconds_to_datetime
 
 # Setup Redis connection
 redis = Redis()
@@ -173,7 +168,7 @@ def handle_remove_event():
         flash(u'Lyhytnimi tai salainen avain ei täsmää. Tarkista tiedot ja yritä uudelleen.')
         return redirect(url_for('handle_list_events'))
 
-    if is_valid_secret_key(remove_secret) != True:
+    if is_valid_secret_key(remove_secret, app.config['SECRET_KEY_CHARACTERS']) != True:
         flash(u'Lyhytnimi tai salainen avain ei täsmää. Tarkista tiedot ja yritä uudelleen.')
         return redirect(url_for('handle_list_events'))
 
@@ -250,7 +245,7 @@ def add_event(short_name='', name='', secret_key='', url='', start_time=None, en
 
     # Generate new secret key if it's not provided
     if not secret_key:
-        secret_key = generate_secret_key()
+        secret_key = generate_secret_key(allowed_characters=app.config['SECRET_KEY_CHARACTERS'])
 
     # Convert datetime objects to timestamp seconds
     start_seconds = datetime_to_seconds(start_time)
@@ -280,46 +275,6 @@ def add_event(short_name='', name='', secret_key='', url='', start_time=None, en
 
     # Execute and return True if no Falses in Redis multi bulk reply
     return False not in pipe.execute()
-
-
-def is_valid_secret_key(secret_key=''):
-    """
-    Return True if string holds only valid secret key characters
-    >>> is_valid_secret_key()
-    False
-    >>> is_valid_secret_key('')
-    False
-    >>> is_valid_secret_key('abc')
-    True
-    >>> is_valid_secret_key('123')
-    False
-    >>> is_valid_secret_key('234')
-    True
-    """
-    return None != re.match('^[%s]+$' % app.config['SECRET_KEY_CHARACTERS'], secret_key)
-
-
-def is_valid_short_name(short_name=''):
-    """
-    Return True if string holds only valid short name characters
-    >>> is_valid_short_name()
-    False
-    >>> is_valid_short_name('')
-    False
-    >>> is_valid_short_name(' ')
-    False
-    >>> is_valid_short_name('abc')
-    True
-    >>> is_valid_short_name('a')
-    True
-    >>> is_valid_short_name('a_')
-    True
-    >>> is_valid_short_name('123')
-    True
-    >>> is_valid_short_name('abc_')
-    True
-    """
-    return None != re.match('^[a-z0-9_]+$', short_name)
 
 
 def event_exists(short_name=''):
@@ -438,131 +393,6 @@ def page_not_found(e):
 @app.errorhandler(500)
 def page_not_found(e):
     return render_template('500.html'), 500
-
-
-def parse_date(date=''):
-    """
-    Parse string to Python datetime object or False
-
-    >>> parse_date()
-    False
-    >>> parse_date('')
-    False
-    >>> parse_date('23.2.1990 23:50')
-    datetime.datetime(1990, 2, 23, 23, 50)
-    >>> parse_date('23.02.85 23:50')
-    datetime.datetime(1985, 2, 23, 23, 50)
-    >>> parse_date('3.12.2091')
-    datetime.datetime(2091, 12, 3, 0, 0)
-    >>> parse_date('03.12.2091')
-    datetime.datetime(2091, 12, 3, 0, 0)
-    >>> parse_date('23:59').strftime('%H:%M') == '23:59'
-    True
-    """
-
-    # Check that date string is not empty
-    if not date:
-        return False
-
-    # Get datetime with dateutil parser
-    parsed_date = date_parser.parse(date, dayfirst=True)
-
-    # Return datetime
-    return parsed_date
-
-
-def validate_url(url=''):
-    """
-    Check that URL exists and return final resolved URL or False
-
-    >>> validate_url()
-    False
-    >>> validate_url('')
-    False
-    >>> validate_url('http://www.google.fi')
-    u'http://www.google.fi/'
-    >>> validate_url('http://www.google')
-    False
-    >>> validate_url('http://urly.fi/xD')
-    u'http://www.myfacewhen.com/46/'
-    """
-
-    # Check that URL is not empty
-    if not url:
-        return False
-
-    # Parse URL
-    parsed_url = urlparse.urlparse(url).geturl()
-
-    # Request URL
-    try:
-        result = requests.request('GET', parsed_url)
-
-        # Raise exception based on HTTP error code
-        result.raise_for_status()
-    except:
-        return False
-
-    # Return final resolved URL
-    return result.url
-
-
-@app.template_filter('datetime_to_seconds')
-def datetime_to_seconds(time_object=None):
-    """
-    Converts Python datetime to seconds, expects UTC+2
-
-    >>> datetime_to_seconds(datetime.datetime(1990, 2, 23, 23, 50))
-    635809800.0
-    >>> datetime_to_seconds(datetime.datetime(2091, 12, 3, 0, 0))
-    3847471200.0
-    """
-    return time.mktime(time_object.timetuple())
-
-
-@app.template_filter('seconds_to_datetime')
-def seconds_to_datetime(timestamp=''):
-    """
-    Converts UNIX timestamp to Python datetime
-
-    >>> seconds_to_datetime(635809800.0)
-    datetime.datetime(1990, 2, 23, 23, 50)
-    >>> seconds_to_datetime('635809800.0')
-    datetime.datetime(1990, 2, 23, 23, 50)
-    >>> seconds_to_datetime('635809800')
-    datetime.datetime(1990, 2, 23, 23, 50)
-    >>> seconds_to_datetime(635809800)
-    datetime.datetime(1990, 2, 23, 23, 50)
-    """
-    return datetime.datetime.fromtimestamp(int(float(timestamp)))
-
-
-def get_current_timestamp():
-    """
-    Get current time as UNIX-y timestamp
-    """
-    return datetime_to_seconds(datetime.datetime.now())
-
-
-def strip_tags(content=''):
-    """
-    Parse content as HTML and return without tags
-
-    >>> strip_tags('')
-    ''
-    >>> strip_tags(u'hello')
-    u'hello'
-    >>> strip_tags(u'he<b>llo</b>')
-    u'hello'
-    """
-    return ''.join(BeautifulSoup(content).findAll(text=True))
-
-
-def generate_secret_key(length=5):
-    """
-    Copy-paste'd from https://github.com/django-extensions/django-extensions/blob/master/django_extensions/management/commands/generate_secret_key.py
-    """
-    return ''.join([choice(app.config['SECRET_KEY_CHARACTERS']) for i in range(length)])
 
 
 def _test():
