@@ -2,11 +2,14 @@
 import requests
 import urlparse
 
+from random import choice
+
 from BeautifulSoup import BeautifulSoup
 
 import datetime
 from dateutil import parser as date_parser
 import time
+
 
 def validate_url(url=''):
     """
