@@ -23,8 +23,8 @@ def validate_url(url=''):
     u'http://www.google.fi/'
     >>> validate_url('http://www.google')
     False
-    >>> validate_url('http://urly.fi/xD')
-    u'http://www.myfacewhen.com/46/'
+    >>> validate_url('http://urly.fi/J')
+    u'http://urly.fi/'
     """
 
     # Check that URL is not empty
